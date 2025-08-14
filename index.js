@@ -95,7 +95,7 @@ const [,, funcName, ...args] = process.argv;
       const msgCount = args.length == 3 ? Number(args[2]) : 1;
       for(let i = 0; i < msgCount; ++i) {
         try {
-            result = await sendFirstMessage(args[0] + (i == 0 ? "" : ` (${i})`), args[1]);
+            result = await sendFirstMessage(args[0] + (i == 0 ? "" : ` (${i + 1})`), args[1]);
             console.log(`Message no.${i + 1} sent`);
         } catch(err) {
             console.log(`Message no.${i + 1} failed with error: ${err.message}`);
