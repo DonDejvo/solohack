@@ -59,6 +59,28 @@ async function sendFirstMessage(message, invitedUserId) {
   return await res.json();
 }
 
+async function getMessages(conversationId, index, count) {
+  const url = `https://messenger.sololearn.com/conversations/${conversationId}/messages?index=${index}&count=${count}`;
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Accept-Encoding": "gzip",
+      "Authorization": `Bearer ${ACCESS_TOKEN}`,
+      "SL-App-Build-Version": "1112",
+      "SL-App-Version": "4.113.2",
+      "SL-Locale": "en",
+      "SL-Plan-Id": "1",
+      "SL-Time-Zone": "0.0"
+    }
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to send message: ${res.status} ${res.statusText}`);
+  }
+  return await res.json();
+}
+
 // CLI argumenty
 const [,, funcName, ...args] = process.argv;
 
@@ -67,10 +89,21 @@ const [,, funcName, ...args] = process.argv;
     let result;
     if (funcName === "openConversation") {
       if (args.length < 1) throw new Error("Usage: node messenger.js openConversation <participantId>");
-      result = await openConversation(args[0]);
+      result = await openConversation(...args);
     } else if (funcName === "sendFirstMessage") {
-      if (args.length < 2) throw new Error("Usage: node messenger.js sendFirstMessage <message> <invitedUserId>");
-      result = await sendFirstMessage(args[0], args[1]);
+      if (args.length < 2) throw new Error("Usage: node messenger.js sendFirstMessage <message> <invitedUserId> <message count>");
+      const msgCount = args.length == 3 ? Number(args[2]) : 1;
+      for(let i = 0; i < msgCount; ++i) {
+        try {
+            result = await sendFirstMessage(args[0] + (i == 0 ? "" : ` (${i})`), args[1]);
+            console.log(`Message no.${i + 1} sent`);
+        } catch(err) {
+            console.log(`Message no.${i + 1} failed with error: ${err.message}`);
+        }
+      }
+    } else if (funcName === "getMessages") {
+      if (args.length < 3) throw new Error("Usage: node messenger.js getMessages <conversationId> <index> <count>");
+      result = await getMessages(...args);
     } else {
       throw new Error(`Unknown function: ${funcName}`);
     }
